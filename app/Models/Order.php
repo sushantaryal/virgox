@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enum\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -29,7 +30,8 @@ class Order extends Model
     {
         return [
             'price' => 'decimal:2',
-            'amount' => 'decimal:8'
+            'amount' => 'decimal:8',
+            'status' => OrderStatus::class,
         ];
     }
 
