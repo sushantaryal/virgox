@@ -6,6 +6,7 @@ use App\Contracts\AssetRepositoryInterface;
 use App\Contracts\OrderRepositoryInterface;
 use App\Contracts\UserRepositoryInterface;
 use App\Enum\OrderStatus;
+use App\Events\OrderMatched;
 use App\Models\Trade;
 use Illuminate\Support\Facades\DB;
 
@@ -64,6 +65,8 @@ class MatchService
                 'volume' => $volume,
                 'fee' => $fee,
             ]);
+
+            OrderMatched::dispatch($trade);
 
             return $trade;
         });
