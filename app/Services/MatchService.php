@@ -6,6 +6,7 @@ use App\Contracts\AssetRepositoryInterface;
 use App\Contracts\OrderRepositoryInterface;
 use App\Contracts\UserRepositoryInterface;
 use App\Enum\OrderStatus;
+use App\Models\Trade;
 use Illuminate\Support\Facades\DB;
 
 class MatchService
@@ -51,6 +52,20 @@ class MatchService
 
             $sellerAsset = $this->assetRepository->findByUserSymbolForUpdate($sellOrder->user_id, $sellOrder->symbol);
             $sellerAsset->decrement('locked_amount', $sellOrder->amount);
+
+            $trade = Trade::create([
+                'buy_order_id' => $buyOrder->id,
+                'sell_order_id' => $sellOrder->id,
+                'buyer_id' => $buyOrder->user_id,
+                'seller_id' => $sellOrder->user_id,
+                'symbol' => $buyOrder->symbol,
+                'price' => $sellOrder->price,
+                'amount' => $buyOrder->amount,
+                'volume' => $volume,
+                'fee' => $fee,
+            ]);
+
+            return $trade;
         });
     }
 }
