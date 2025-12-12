@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Trade extends Model
 {
@@ -36,5 +37,37 @@ class Trade extends Model
             'volume' => 'decimal:2',
             'fee' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Get the user that buys the trade.
+     */
+    public function buyer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'buyer_id');
+    }
+
+    /**
+     * Get the user that sells the trade.
+     */
+    public function seller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'seller_id');
+    }
+
+    /**
+     * Get the order that buys the trade.
+     */
+    public function buyOrder(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'buy_order_id');
+    }
+
+    /**
+     * Get the order that sells the trade.
+     */
+    public function sellOrder(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'sell_order_id');
     }
 }
