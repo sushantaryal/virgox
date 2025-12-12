@@ -4,13 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Enum\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreOrderRequest;
 use App\Models\Asset;
 use App\Models\User;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    public function __construct(protected OrderService $orderService)
+    {}
+
     /**
      * Display a listing of the resource.
      */
@@ -22,45 +27,9 @@ class OrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request)
     {
-        $validated = $request->validate([
-            'symbol' => 'required|string',
-            'side' => 'required|in:buy,sell',
-            'price' => 'required|numeric|gt:0',
-            'amount' => 'required|numeric|gt:0',
-        ]);
-
-        $authUser = $request->user();
-
-        $order = DB::transaction(function () use ($validated, $authUser) {
-            $user = User::where('id', $authUser->id)->lockForUpdate()->first();
-
-            if ($validated['side'] === 'buy') {
-                $cost = $validated['price'] * $validated['amount'];
-                if ($user->balance < $cost) {
-                    throw new \Exception('Insufficient balance');
-                }
-                $user->decrement('balance', $cost);
-            } else {
-                $asset = Asset::where('user_id', $user->id)
-                    ->where('symbol', $validated['symbol'])
-                    ->lockForUpdate()
-                    ->first();
-
-                if (!$asset || $asset->amount < $validated['amount']) {
-                    throw new \Exception("Insufficient assets");
-                }
-                $asset->decrement('amount', $validated['amount']);
-                $asset->increment('locked_amount', $validated['amount']);
-            }
-
-            $order = $user->orders()->create(array_merge($validated, [
-                'status' => OrderStatus::OPEN,
-            ]));
-
-            return $order;
-        });
+        $order = $this->orderService->placeOrder($request->user()->id, $request->validated());
 
         return response()->json($order);
     }
@@ -68,8 +37,8 @@ class OrderController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function cancel(string $id)
+    public function cancel(Request $request, string $id)
     {
-        // Cancels an open order and releases locked USD or assets
+        return $this->orderService->cancelOrder($id, $request->user()->id);
     }
 }
