@@ -4,12 +4,21 @@ namespace App\Repositories;
 use App\Models\Order;
 use App\Contracts\OrderRepositoryInterface;
 use App\Enum\OrderStatus;
+use Illuminate\Database\Eloquent\Collection;
 
 class OrderRepository implements OrderRepositoryInterface
 {
     public function findForUpdate(int $id): ?Order
     {
         return Order::where('id', $id)->lockForUpdate()->first();
+    }
+
+    public function getAllOpenOrdersBySymbol(string $symbol): Collection
+    {
+        return Order::where('symbol', $symbol)
+            ->where('status', OrderStatus::OPEN)
+            ->orderBy('price', 'desc')
+            ->get();
     }
 
     public function findOpenCounter(string $symbol, string $side, string $price): ?Order

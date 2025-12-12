@@ -18,6 +18,14 @@ class OrderService
     ) {
     }
 
+    public function getAllOpenOrdersBySymbol(string $symbol)
+    {
+        if (!$symbol) {
+            throw new \Exception('Invalid symbol');
+        }
+        return $this->orderRepository->getAllOpenOrdersBySymbol($symbol);
+    }
+
     /**
      * Place a new order after validating user balance/assets.
      */

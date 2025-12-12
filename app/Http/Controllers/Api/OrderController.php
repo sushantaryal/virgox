@@ -19,9 +19,11 @@ class OrderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Returns all open orders for orderbook
+        return response()->json([
+            'orders' => $this->orderService->getAllOpenOrdersBySymbol($request->symbol)
+        ]);
     }
 
     /**
