@@ -6,6 +6,7 @@ use App\Contracts\AssetRepositoryInterface;
 use App\Contracts\OrderRepositoryInterface;
 use App\Contracts\UserRepositoryInterface;
 use App\Enum\OrderStatus;
+use App\Jobs\MatchOrderJob;
 use Illuminate\Support\Facades\DB;
 
 class OrderService
@@ -41,9 +42,13 @@ class OrderService
                 $asset->increment('locked_amount', $data['amount']);
             }
 
-            return $this->userRepository->createUserOrder($user, array_merge($data, [
+            $order = $this->userRepository->createUserOrder($user, array_merge($data, [
                 'status' => OrderStatus::OPEN,
             ]));
+
+            MatchOrderJob::dispatch($order);
+
+            return $order;
         });
     }
 
