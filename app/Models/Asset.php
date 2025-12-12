@@ -17,6 +17,7 @@ class Asset extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'symbol',
         'amount',
         'locked_amount',
