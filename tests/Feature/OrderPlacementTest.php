@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Enum\OrderStatus;
+use App\Jobs\MatchOrderJob;
 use App\Models\Asset;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class OrderPlacementTest extends TestCase
@@ -121,5 +124,42 @@ class OrderPlacementTest extends TestCase
         Exceptions::assertReported(function (\Exception $e) {
             return $e->getMessage() === 'Insufficient assets';
         });
+    }
+
+    public function test_buy_and_sell_orders_match(): void
+    {
+        $this->actingAs($this->seller, 'sanctum');
+
+        $this->postJson('/api/orders', [
+            'symbol' => 'BTC',
+            'side' => 'sell',
+            'price' => 50000,
+            'amount' => 0.50,
+        ]);
+
+        $this->actingAs($this->buyer, 'sanctum');
+
+        $this->postJson('/api/orders', [
+            'symbol' => 'BTC',
+            'side' => 'buy',
+            'price' => 50000,
+            'amount' => 0.50,
+        ]);
+
+        (new MatchOrderJob($this->buyer->orders()->first()))->handle();
+
+        $this->assertEquals(1, $this->buyer->assets()->count());
+
+        $this->assertEquals(0.50, $this->buyer->assets()->where('symbol', 'BTC')->first()->amount);
+        $this->assertEquals(0.50, $this->seller->assets()->where('symbol', 'BTC')->first()->amount);
+        $this->assertEquals(0.00, $this->seller->assets()->where('symbol', 'BTC')->first()->locked_amount);
+
+        $volume = 0.50 * 50000;
+        $fee = $volume * 0.015;
+        $sellerNet = $volume - $fee;
+        $sellerBalance = $this->seller->balance + $sellerNet;
+        $this->assertEquals($sellerBalance, $this->seller->refresh()->balance);
+
+        $this->assertEquals(2, Order::where('status', OrderStatus::FILLED)->count());
     }
 }
