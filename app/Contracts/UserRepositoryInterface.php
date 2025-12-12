@@ -12,4 +12,6 @@ interface UserRepositoryInterface
     public function updateBalance(User $user, string $newBalance): User;
 
     public function createUserOrder(User $user, array $data): Order;
+
+    public function getUserAssets(User $user);
 }

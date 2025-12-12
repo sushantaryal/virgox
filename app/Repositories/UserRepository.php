@@ -23,4 +23,15 @@ class UserRepository implements UserRepositoryInterface
     {
         return $user->orders()->create($data);
     }
+
+    public function getUserAssets(User $user)
+    {
+        return $user->assets->map(function ($asset) {
+            return [
+                'symbol' => $asset->symbol,
+                'amount' => $asset->amount,
+                'locked_amount' => $asset->locked_amount,
+            ];
+        });
+    }
 }

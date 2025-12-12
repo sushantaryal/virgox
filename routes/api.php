@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [ProfileController::class,'show']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
 
