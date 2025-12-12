@@ -14,4 +14,6 @@ interface UserRepositoryInterface
     public function createUserOrder(User $user, array $data): Order;
 
     public function getUserAssets(User $user);
+
+    public function getUserOrders(User $user);
 }

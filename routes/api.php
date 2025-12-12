@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -12,4 +13,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
 
     Route::get('/user', [UserController::class, 'show']);
+    Route::get('/user/orders', [UserOrderController::class, 'index']);
 });

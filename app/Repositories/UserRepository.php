@@ -34,4 +34,18 @@ class UserRepository implements UserRepositoryInterface
             ];
         });
     }
+
+    public function getUserOrders(User $user)
+    {
+        return $user->orders->map(function ($order) {
+            return [
+                'id' => $order->id,
+                'symbol' => $order->symbol,
+                'side' => $order->side,
+                'price' => $order->price,
+                'amount' => $order->amount,
+                'status' => $order->status->label(),
+            ];
+        });
+    }
 }

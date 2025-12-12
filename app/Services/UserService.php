@@ -22,4 +22,12 @@ class UserService
             'assets' => $this->userRepository->getUserAssets($user)
         ];
     }
+
+    /**
+     * Get user orders.
+     */
+    public function getUserOrders(User $user)
+    {
+        return $this->userRepository->getUserOrders($user);
+    }
 }
